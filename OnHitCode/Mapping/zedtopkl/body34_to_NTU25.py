@@ -59,24 +59,6 @@ def strip_trailing_L_number(path):
     match = re.search(r'L(\d+)$', path)
     return int(match.group(1)) if match else None  # Convert to int
 
-id_map = {}
- 
-def map_missing_to_available(list1, list2):
-    n = len(list1)
-    # Convert to sets for easy comparison
-    set1, set2 = set(list1), set(list2)
-
-    # Find the missing element in list1
-    missing = list(set2 - set1)  # Numbers in list2 but not in list1
-
-    # Find the lowest available number in list1 to map to
-    available = list(set1 - set2)  # Numbers in list1 but not in list2
-
-    for n in range(len(missing)):
-        list1[list1.index(avaliable(n))] = missing[n]
-        id_map[missing[n]] = list1.index(avaliable[n])
-
-
 def process_zed_file(input_path, output_dir, class_label=0):
 
     #load zed data 
@@ -85,34 +67,29 @@ def process_zed_file(input_path, output_dir, class_label=0):
 
     max_body = raw_data["bodies"]
     bodies = {}
-    ids = [None for _ in range(max_body)]
-    
-    for entry in raw_data["pose_data"]:
+     
+
+    for frame in raw_data["pose_data"]:
         
-        temp_ids = [None for _ in range(max_body)]
-        for t,frame in  enumerate(entry):
+        #bodies in the frame
+        id_map = []  
+        for t,body in  enumerate(frame):
 
-            body_id = entry['id']
-                    
-
-            if body_id not in temp_ids :
-                counter = 0
-                while temp_ids[counter] != None:
-                    counter += 1
-                
-                temp_ids[counter] = body_id 
-
-            map_missing_to_avaliable(ids,temps_ids)
+            bodies_inframe = {}
+            #body_id = body['id']
+            #assuming your only recording one person, this will always reassign your id to 0 
+            body_id = 0 
             
-            bodies.setdefault(id_map[body_id], []).append(entry)
+                         
+
+            #will just hard code it such that the id will always be zero,      
+            bodies.setdefault(body_id, []).append(body)
     
-    print(bodies.keys())
     num_bodies = raw_data["bodies"]   
     max_frames = max(len(frames) for frames in bodies.values())
     num_joints = 26
     num_cords = 3 #3d skeleton
     # np array in size [M x T x V x C]
-    print(num_bodies,max_frames,num_joints,num_cords)
     skeleton_array = np.full((num_bodies,max_frames,num_joints,num_cords), np.nan, dtype=np.float32)
 
     #this converts the the zed sksleton into the ntu skeleton
