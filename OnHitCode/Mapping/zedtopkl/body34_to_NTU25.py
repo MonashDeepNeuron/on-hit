@@ -117,23 +117,30 @@ def batch_process(input_dir,output_dir):
 
     os.makedirs(output_dir,exist_ok=True)
 
-    for file_name in tqdm(os.listdir(input_dir)):
+    for counter,file_name in enumerate(tqdm(os.listdir(input_dir))):
         if not file_name.endswith('.json'):
             continue 
 
         input_path = os.path.join(input_dir, file_name)
         base_name = f"{os.path.splitext(os.path.basename(input_path))[0]}"
         label = strip_trailing_L_number(base_name)
-        train.append(base_name)
+
+        if counter == 0:
+            train.append(base_name)
+        elif counter == 1:
+            val.append(base_name)
+        else:
+            test.append(base_name)
+
 
         annotations.append(process_zed_file(input_path, output_dir,label))
         
         data = {
                 "split": {
                     "xtrain":train,
-                    "xval":val,
-                    "xtest":test},
-                "annotations":annotations
+                    "xsub_val":val,
+                    "xsub_test":test},
+                "annotations":{annotations}
                 }
 
 
