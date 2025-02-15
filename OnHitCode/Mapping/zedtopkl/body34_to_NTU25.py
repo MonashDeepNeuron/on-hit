@@ -35,7 +35,7 @@ ZED34_TO_NTU_MAPPING = {
 
 def convert_zed34_to_ntu(body_data):
     num_frames = len(body_data)
-    ntu_joints = 26
+    ntu_joints = 25
 
     keypoints = np.zeros((ntu_joints,3), dtype = np.float32)
 
@@ -46,7 +46,7 @@ def convert_zed34_to_ntu(body_data):
         if kp == [None,None,None]:
             continue
         elif index in ZED34_TO_NTU_MAPPING:
-            ntu_index = ZED34_TO_NTU_MAPPING[index]
+            ntu_index = ZED34_TO_NTU_MAPPING[index] - 1
             keypoints[ntu_index] = kp 
 
     max_val = np.max(np.abs(keypoints))
@@ -87,7 +87,7 @@ def process_zed_file(input_path, output_dir, class_label=0):
     
     num_bodies = raw_data["bodies"]   
     max_frames = max(len(frames) for frames in bodies.values())
-    num_joints = 26
+    num_joints = 25
     num_cords = 3 #3d skeleton
     # np array in size [M x T x V x C]
     skeleton_array = np.full((num_bodies,max_frames,num_joints,num_cords), np.nan, dtype=np.float32)
@@ -140,7 +140,7 @@ def batch_process(input_dir,output_dir):
                     "xtrain":train,
                     "xsub_val":val,
                     "xsub_test":test},
-                "annotations":{annotations}
+                "annotations":annotations
                 }
 
 

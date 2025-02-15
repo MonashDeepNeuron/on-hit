@@ -11,8 +11,9 @@ with open("/home/labuser/OnHit/OnHitCode/Mapping/zedtopkl/pickle_data/annotation
     data = pickle.load(f)
 
 
-img_path =  data["annotations"][0] # waiting for pkl file from issue2
+img_path =  data["annotations"][1] # waiting for pkl file from issue2
 
 
 model = init_recognizer(config_path, checkpoint_path, device="cuda:0")  
 result = inference_recognizer(model, img_path)
+print(result)
