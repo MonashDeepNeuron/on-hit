@@ -22,9 +22,30 @@ class ZEDCamera:
         self.data_list = []
         self.max_bodies = 0
         self.frame_count = 0
+    
+    def body_tracking_parameters(self):
+        pass
 
-    def configure_camera(self, resolution, svo_file, ip_address):
-        """ Configure the camera settings """
+    def configure_camera(self, svo_file: str,
+                         ip_address: str,
+                         resolution: str,
+                         fps: int=60
+                         ) -> str:
+        
+        """
+        Configures the ZED camera with specified input parameters.
+
+        Args:
+            svo_file (str): Path to an SVO file for replaying pre-recorded data.
+            ip_address (str): IP address for streaming input from a remote ZED camera.
+            fps (int): Desired frames per second for camera operation.
+            resolution (str): Camera resolution, options include 'HD2K', 'HD1200', 'HD1080', 'HD720', 'SVGA', or 'VGA'.
+        
+        Returns:
+            str: Confirms what path ZEDCamera is using - svo or ip_address
+        """
+
+        # checking if the ip address and the svo_file has a path
         if svo_file:
             self.init_params.set_from_svo_file(svo_file)
             print(f"[ZEDCamera] Using SVO File input: {svo_file}")
@@ -34,7 +55,7 @@ class ZEDCamera:
         else:
             print("[ZEDCamera] Using live camera stream")
 
-        # Set camera resolution
+        # list of camera resolution for mapping 
         res_map = {
             "HD2K": sl.RESOLUTION.HD2K,
             "HD1200": sl.RESOLUTION.HD1200,
@@ -43,17 +64,32 @@ class ZEDCamera:
             "SVGA": sl.RESOLUTION.SVGA,
             "VGA": sl.RESOLUTION.VGA
         }
+
+        # Looks for the resolution specific, if not then just uses the default 1080 
         self.init_params.camera_resolution = res_map.get(resolution, sl.RESOLUTION.HD1080)
         print(f"[ZEDCamera] Using Camera in resolution {resolution}")
 
-        self.init_params.camera_fps = 60
+        # Configures the camera according to the functions parameters
+        self.init_params.camera_fps = fps
         self.init_params.coordinate_units = sl.UNIT.METER
         self.init_params.depth_mode = sl.DEPTH_MODE.ULTRA
         self.init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Y_UP
 
-    def open_camera(self):
-        """ Open the ZED Camera """
+    def open_camera(self, 
+                    inference_threshold: int=40
+                    ) -> str:
+        """ 
+        Open the ZED Camera and configure the pose estimation model
+
+        Input: 
+            inference_threshold (int) = The minimum confidence score require to keep a detection
+
+        Output: 
+            str: Confirms that body tracking and camera has been enabled 
+         
+        """
         err = self.zed.open(self.init_params)
+
         if err != sl.ERROR_CODE.SUCCESS:
             print("[ZEDCamera] Failed to open camera.")
             exit(1)
@@ -62,16 +98,18 @@ class ZEDCamera:
         tracking_params = sl.PositionalTrackingParameters()
         self.zed.enable_positional_tracking(tracking_params)
 
-        # Enable body tracking
         self.body_param = sl.BodyTrackingParameters()
-        self.body_param.enable_tracking = True
-        self.body_param.enable_body_fitting = False
+
+        # specifies the body tracking model and the skeleton format
         self.body_param.detection_model = sl.BODY_TRACKING_MODEL.HUMAN_BODY_FAST
         self.body_param.body_format = sl.BODY_FORMAT.BODY_34
 
+        self.body_param.enable_tracking = True
+        self.body_param.enable_body_fitting = False
+
         self.zed.enable_body_tracking(self.body_param)
         self.body_runtime_param = sl.BodyTrackingRuntimeParameters()
-        self.body_runtime_param.detection_confidence_threshold = 40
+        self.body_runtime_param.detection_confidence_threshold = inference_threshold
 
         print("[ZEDCamera] Camera and body tracking enabled.")
 
