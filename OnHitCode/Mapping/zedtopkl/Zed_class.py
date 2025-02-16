@@ -135,7 +135,7 @@ class ZEDCamera:
 
         while viewer.is_available():
             if self.zed.grab() == sl.ERROR_CODE.SUCCESS:
-                self.zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.CPU, display_resolution)
+                self.zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.GPU, display_resolution) # must use GPU instead of CPU to take advantage of CUDA
                 self.zed.retrieve_bodies(bodies, self.body_runtime_param)
                 viewer.update_view(image, bodies)
                 image_left_ocv = image.get_data()
