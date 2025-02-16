@@ -23,6 +23,7 @@
    This sample shows how to detect a human bodies and draw their 
    modelised skeleton in an OpenGL window
 """
+
 import time
 import cv2
 from Zed_Ntu_Converter import convert_zed34_to_ntu
@@ -174,6 +175,8 @@ def main():
     
     frame = 0
     frames = []
+    
+    time_interval = 2
 
     last_time = time.time()  # Store the initial time
 
@@ -202,7 +205,7 @@ def main():
                 frame += 1
 
         # Check if 5 seconds have passed
-            if time.time() - last_time >= 5:
+            if time.time() - last_time >= time_interval:
                 print(create_live_pose_data(frames,11))  # Replace with your action
                 frames = []
                 last_time = time.time()  # Reset timer
