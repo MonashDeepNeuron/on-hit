@@ -22,6 +22,8 @@ class ZEDCamera:
         self.data_list = []
         self.max_bodies = 0
         self.frame_count = 0
+        self.viewer =   None 
+        self.viewer_initalised = False
 
     def configure_camera(self, resolution, svo_file, ip_address):
         """ Configure the camera settings """
@@ -74,6 +76,58 @@ class ZEDCamera:
         self.body_runtime_param.detection_confidence_threshold = 40
 
         print("[ZEDCamera] Camera and body tracking enabled.")
+
+    def single_frame(self,annotations: bool):
+        #Settings to add annotations to the frame
+        bodies = sl.Bodies()
+
+        image = sl.Mat()
+
+        camera_info = self.zed.get_camera_information()
+        display_resolution = sl.Resolution(
+            min(camera_info.camera_configuration.resolution.width, 1280),
+            min(camera_info.camera_configuration.resolution.height, 720)
+        )
+
+        image_scale = [display_resolution.width / camera_info.camera_configuration.resolution.width,
+                       display_resolution.height / camera_info.camera_configuration.resolution.height]
+        """ Capture a single frame, run body tracking, and return detected body positions and keypoints """
+        if self.zed.grab() == sl.ERROR_CODE.SUCCESS:
+            self.zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.CPU, display_resolution)
+            self.zed.retrieve_bodies(bodies, self.body_runtime_param)
+            frame = image.get_data()
+            if annotations:
+                                
+                if not self.viewer_initalised:
+                    self.viewer = gl.GLViewer()
+                    self.viewer.init(camera_info.camera_configuration.calibration_parameters.left_cam,
+                                self.body_param.enable_tracking, self.body_param.body_format)
+                    self.viewer_initalised = True
+                self.viewer.update_view(image, bodies)
+                frame = image.get_data()
+                cv_viewer.render_2D(frame,image_scale,bodies.body_list
+                        ,self.body_param.enable_tracking,self.body_param.body_format)
+            # Retrieve bodies detected in the frame
+            
+            #this stores every body into a list and then return 
+            detected_bodies = []
+            if bodies.body_list:
+                for body in bodies.body_list:
+                    body_data = {
+                        "id": body.id,
+                        "position": body.position.tolist(),
+                        "keypoints": body.keypoint.tolist()
+                    }
+                    detected_bodies.append(body_data)
+                
+            return{
+                   "frame":frame,
+                   "keypoints":detected_bodies  # The list of detected body positions and keypoints
+                    }
+        else:
+            print("[ERROR] Could not grab a frame from the ZED camera")
+            return None
+
 
     def process_frames(self):
         """ Capture frames and process body tracking """
