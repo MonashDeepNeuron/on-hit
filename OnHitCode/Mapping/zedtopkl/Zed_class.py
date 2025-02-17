@@ -115,6 +115,20 @@ class ZEDCamera:
 
         print("[ZEDCamera] Camera and body tracking enabled.")
 
+    '''
+    This runs a single instance of the zed camera that takes a frame that produces the pose skeleton data
+    and then returns it. Useful for when you want to do actions within your camera stream.
+
+    Input: 
+    annotation: bool = True or False to know if u want to retrun the whole frame data
+
+    Output:
+    Dict = {
+    "frame": this is the image of frame 
+    "keypoints": the is the array of the keypoints, one array for each body in the frame
+    }
+
+    '''
     def single_frame(self,annotations: bool):
         #Settings to add annotations to the frame
         bodies = sl.Bodies()
@@ -146,7 +160,7 @@ class ZEDCamera:
                 cv_viewer.render_2D(frame,image_scale,bodies.body_list
                         ,self.body_param.enable_tracking,self.body_param.body_format)
             else:
-                frame = image.get_data()
+                frame = None
             # Retrieve bodies detected in the frame
             
             #this stores every body into a list and then return 
@@ -169,7 +183,7 @@ class ZEDCamera:
             return None
 
 
-    def process_frames(self):
+    def zed(self):
         """ Capture frames and process body tracking """
         camera_info = self.zed.get_camera_information()
         display_resolution = sl.Resolution(
