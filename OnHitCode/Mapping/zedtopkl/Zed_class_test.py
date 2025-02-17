@@ -12,6 +12,7 @@ while True:
 
     print(frame_data)
     cv2.imshow("Zed",frame_data["frame"])
+    
     if cv2.waitKey(1) & 0xFF == ord('q'):
         print("break")
         cv2.destroyAllWindows()

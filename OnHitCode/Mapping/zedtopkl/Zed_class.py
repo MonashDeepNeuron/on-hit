@@ -24,9 +24,6 @@ class ZEDCamera:
         self.frame_count = 0
         self.viewer =   None 
         self.viewer_initalised = False
-    
-    def body_tracking_parameters(self):
-        pass
 
     def configure_camera(self,resolution: str="",
                          svo_file: str="",
@@ -67,7 +64,7 @@ class ZEDCamera:
             "VGA": sl.RESOLUTION.VGA
         }
 
-        # Looks for the resolution specific, if not then just uses the default 1080 
+        # Looks for the resolution specifications, if not then just uses the default 1080 
         self.init_params.camera_resolution = res_map.get(resolution, sl.RESOLUTION.HD1080)
         print(f"[ZEDCamera] Using Camera in resolution {resolution}")
 
@@ -88,7 +85,6 @@ class ZEDCamera:
 
         Output: 
             str: Confirms that body tracking and camera has been enabled 
-         
         """
         err = self.zed.open(self.init_params)
 
@@ -114,42 +110,54 @@ class ZEDCamera:
         self.body_runtime_param.detection_confidence_threshold = inference_threshold
 
         print("[ZEDCamera] Camera and body tracking enabled.")
+    
 
-    '''
-    This runs a single instance of the zed camera that takes a frame that produces the pose skeleton data
-    and then returns it. Useful for when you want to do actions within your camera stream.
+    def single_frame_inference(self, 
+                               annotations: bool = True):
+        '''
+        Makes inference on a single frame using the ZedSDK camera
 
-    Input: 
-    annotation: bool = True or False to know if u want to retrun the whole frame data
+        Input: 
+            annotations (bool): 
+                True: if you want to return the image as a np.array (visualise the frame with the skeleton data)
+                False: returns the image as none (purely detections)
 
-    Output:
-    Dict = {
-    "frame": this is the image of frame 
-    "keypoints": the is the array of the keypoints, one array for each body in the frame
-    }
+        Output:
+            Dict:  {
+            "frame" (np.nd.array): [height x width x channels] this format maps RGB values for each pixel 
+                channels: colour channels of the frames (RGB, BGR etc)
 
-    '''
-    def single_frame(self,annotations: bool):
-        #Settings to add annotations to the frame
+            "keypoints" (list[Dict]): [{id, position, keypoints}]
+                id (int) = number id
+                position (List) = the central position of the skeleton in [x,y,z] co-ordinates 
+                keypoints (List[List]) = index corresponds to joint coordinates joint map: 
+                    refer to: https://www.stereolabs.com/docs/body-tracking
+            }
+        '''
+
+        # Containers for the images and the bodies 
         bodies = sl.Bodies()
-
         image = sl.Mat()
 
+        # initialises the frames to the specified width and height 
         camera_info = self.zed.get_camera_information()
         display_resolution = sl.Resolution(
             min(camera_info.camera_configuration.resolution.width, 1280),
             min(camera_info.camera_configuration.resolution.height, 720)
         )
 
+        # scale the images to the display resolution
         image_scale = [display_resolution.width / camera_info.camera_configuration.resolution.width,
                        display_resolution.height / camera_info.camera_configuration.resolution.height]
-        """ Capture a single frame, run body tracking, and return detected body positions and keypoints """
+        
+        # Capture a single frame, run body tracking, and return detected body positions and keypoints
         if self.zed.grab() == sl.ERROR_CODE.SUCCESS:
             self.zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.CPU, display_resolution)
             self.zed.retrieve_bodies(bodies, self.body_runtime_param)
             frame = image.get_data()
-            if annotations:
-                                
+
+            # IF annotations==False WE DO NOT INITIALISE THE VIDEO RENDER DISPLAY
+            if annotations:             
                 if not self.viewer_initalised:
                     self.viewer = gl.GLViewer()
                     self.viewer.init(camera_info.camera_configuration.calibration_parameters.left_cam,
@@ -161,9 +169,8 @@ class ZEDCamera:
                         ,self.body_param.enable_tracking,self.body_param.body_format)
             else:
                 frame = None
-            # Retrieve bodies detected in the frame
             
-            #this stores every body into a list and then return 
+            #this stores every body into a list for the output dictionary
             detected_bodies = []
             if bodies.body_list:
                 for body in bodies.body_list:
@@ -176,86 +183,96 @@ class ZEDCamera:
                 
             return{
                    "frame":frame,
-                   "keypoints":detected_bodies  # The list of detected body positions and keypoints
+                   "keypoints":detected_bodies 
                     }
         else:
             print("[ERROR] Could not grab a frame from the ZED camera")
             return None
 
 
-    def zed(self):
-        """ Capture frames and process body tracking """
+    def video_inference(self, 
+                        display: bool = True):
+        """ 
+        Makes inference on a video stream using the ZedSDK camera and automatically shows the VideoDisplay. 
+        Pause/unpause video capture: "m"
+        Ending video capture: "q"
+    
+        Output: 
+            return_dataset (list[dict]):  [{id, position, keypoints, frame}...]
+                    id (int) = number id
+                    position (List) = the central position of the skeleton in [x,y,z] co-ordinates 
+                    keypoints (List[List]) = index corresponds to joint coordinates joint map: 
+                        refer to: https://www.stereolabs.com/docs/body-tracking
+                    frame (int): frame number 
+        """
+
+        # Intialises the camera resolution 
         camera_info = self.zed.get_camera_information()
         display_resolution = sl.Resolution(
             min(camera_info.camera_configuration.resolution.width, 1280),
             min(camera_info.camera_configuration.resolution.height, 720)
         )
+
+        # Scales the resolution to the display dimensions
         image_scale = [display_resolution.width / camera_info.camera_configuration.resolution.width,
                        display_resolution.height / camera_info.camera_configuration.resolution.height]
 
-        viewer = gl.GLViewer()
-        viewer.init(camera_info.camera_configuration.calibration_parameters.left_cam,
-                    self.body_param.enable_tracking, self.body_param.body_format)
+        # intialises the video renderer
+        if not self.viewer_initalised:
+            self.viewer = gl.GLViewer()
+            self.viewer.init(camera_info.camera_configuration.calibration_parameters.left_cam,
+                        self.body_param.enable_tracking, self.body_param.body_format)
+            self.viewer_initalised = True
 
         bodies = sl.Bodies()
         image = sl.Mat()
         key_wait = 10
-        frame = 0 #frame counter
+        frame = 0 
         return_dataset = [] 
 
-        while viewer.is_available():
+        while self.viewer.is_available():
             if self.zed.grab() == sl.ERROR_CODE.SUCCESS:
-                self.zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.CPU, display_resolution) # must use GPU instead of CPU to take advantage of CUDA
+                self.zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.CPU, display_resolution) 
                 self.zed.retrieve_bodies(bodies, self.body_runtime_param)
-                viewer.update_view(image, bodies)
+                self.viewer.update_view(image, bodies)
                 image_left_ocv = image.get_data()
                 cv_viewer.render_2D(image_left_ocv, image_scale, bodies.body_list,
                                     self.body_param.enable_tracking, self.body_param.body_format)
-                #the list of bodies within the frame
+                
                 if bodies.body_list:
                     for body in bodies.body_list:
-                        #each body has unique attributes
+                        
                         body_data = {
                             "id": body.id,
                             "position": body.position.tolist(),
                             "keypoints": body.keypoint.tolist(), 
                             "frame":frame
                             }  
-                        #this is the dataset that will be sent when the recording is done
+
                         return_dataset.append(body_data)           
-               #increment the frame count 
+
                 frame += 1
-                cv2.imshow("ZED | 2D View", image_left_ocv)
+                if display:
+                    cv2.imshow("ZED | 2D View", image_left_ocv)
+            
                 key = cv2.waitKey(key_wait)
                 if key == ord('q'):  # Quit
                     print("[ZEDCamera] Exiting...")
-                    viewer.exit()
+                    self.viewer.exit()
                     self.cleanup()
-                    #return the dataset 
                     return(return_dataset)
-                    break
+
                 elif key == ord('m'):  # Pause/Restart
                     key_wait = 0 if key_wait > 0 else 10
                     print("[ZEDCamera] Pause" if key_wait == 0 else "[ZEDCamera] Restart")
 
-
-        viewer.exit()
+        self.viewer.exit()
         self.cleanup()
 
-    def create_labeled_data(self, label, output_path="./zed_data/"):
-        """ Save labeled pose data to JSON file """
-        output_file = f"ann{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}L{label}.json"
-        json_data = {
-            "label": label,
-            "pose_data": self.data_list,
-            "bodies": self.max_bodies
-        }
-        with open(output_path + output_file, "w") as f:
-            json.dump(json_data, f, indent=4)
-        print(f"[ZEDCamera] Labeled data saved: {output_file}")
-
     def cleanup(self):
-        """ Cleanup resources """
+        """ 
+        Shuts off all background applications when ZedSDK was initialised and closes camera. 
+        """
         self.zed.disable_body_tracking()
         self.zed.disable_positional_tracking()
         self.zed.close()
