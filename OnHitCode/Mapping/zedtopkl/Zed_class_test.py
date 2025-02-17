@@ -5,12 +5,11 @@ import cv2
 zed = ZEDCamera()
 zed.configure_camera()
 zed.open_camera()
-
-
+zed.video_inference()
+'''
 while True:
-    frame_data = zed.single_frame(True)
+    frame_data = zed.single_frame_inference(True)
 
-    print(frame_data)
     cv2.imshow("Zed",frame_data["frame"])
     
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -18,7 +17,7 @@ while True:
         cv2.destroyAllWindows()
         zed.cleanup()
         break
-
+'''
 
 
 
