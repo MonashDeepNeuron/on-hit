@@ -28,9 +28,9 @@ class ZEDCamera:
     def body_tracking_parameters(self):
         pass
 
-    def configure_camera(self, svo_file: str,
-                         ip_address: str,
-                         resolution: str,
+    def configure_camera(self,resolution: str="",
+                         svo_file: str="",
+                         ip_address: str="",
                          fps: int=60
                          ) -> str:
         
@@ -145,6 +145,8 @@ class ZEDCamera:
                 frame = image.get_data()
                 cv_viewer.render_2D(frame,image_scale,bodies.body_list
                         ,self.body_param.enable_tracking,self.body_param.body_format)
+            else:
+                frame = image.get_data()
             # Retrieve bodies detected in the frame
             
             #this stores every body into a list and then return 
@@ -189,7 +191,7 @@ class ZEDCamera:
 
         while viewer.is_available():
             if self.zed.grab() == sl.ERROR_CODE.SUCCESS:
-                self.zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.GPU, display_resolution) # must use GPU instead of CPU to take advantage of CUDA
+                self.zed.retrieve_image(image, sl.VIEW.LEFT, sl.MEM.CPU, display_resolution) # must use GPU instead of CPU to take advantage of CUDA
                 self.zed.retrieve_bodies(bodies, self.body_runtime_param)
                 viewer.update_view(image, bodies)
                 image_left_ocv = image.get_data()

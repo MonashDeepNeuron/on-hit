@@ -3,7 +3,7 @@ import cv2
 
 
 zed = ZEDCamera()
-
+zed.configure_camera()
 zed.open_camera()
 
 
