@@ -1,25 +1,57 @@
 import socket
 
-server_ip = "0.0.0.0"  # Listen on all interfaces
-server_port = 5000
+class SocketServer:
+    def __init__(self, host:str="0.0.0.0", port:int=5000):
+        '''
+        Init for the server class, this allows us to create a server socket that recieves messages
+        Input: 
+            host: str = 0,0,0,0 means it accepts from all ips
+            port: int = port number use to connect
+        
+        '''
+        self.server_ip = host
+        self.server_port = port
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind((self.server_ip, self.server_port))
+        self.server_socket.listen(1)
+        print(f"Server listening on {self.server_ip}:{self.server_port}...")
 
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((server_ip, server_port))
-server_socket.listen(1)
+    def receive_single_message(self):
+        '''
+        Calling this function opens up the socket to receive message and then 
+        returns it (note: does not automatically close the socket)
 
-print(f"Server listening on {server_ip}:{server_port}...")
+        Return:
+            data: depends on what you are sending over, most likely will be a json like
 
-client_socket, client_address = server_socket.accept()
-print(f"Connected by {client_address}")
+        '''
+        """Waits for a single message from the client and returns it."""
+        self.client_socket, client_address = self.server_socket.accept()
+        #print(f"Connected by {client_address}")
 
-# Receive data from client
-data = client_socket.recv(8192).decode()
-print(f"Received from client: {data}")
+        # Receive a single message
+        data = self.client_socket.recv(8192).decode()
+        #print(f"Received from client: {data}")
 
-# Process and send a response
-response = f"Server received: {data.upper()}"
-client_socket.sendall(response.encode())
+        return data  # Return the received message
 
-# Close sockets
-client_socket.close()
-server_socket.close()
+    def close_socket(self):
+        '''
+        Manually closes the socket
+        '''
+        if hasattr(self, "client_socket"):  # Check if client socket exists
+            self.client_socket.close()
+            print("Client socket closed.")
+        self.server_socket.close()
+        print("Server socket closed.")
+
+# Run the server to receive one message
+if __name__ == "__main__":
+    server = SocketServer()
+    try:
+        message = server.receive_single_message()
+        print(f"Final message received: {message}")
+    except KeyboardInterrupt:
+        print("\nServer interrupted.")
+    finally:
+        server.close_socket()
