@@ -8,6 +8,7 @@ function App() {
   const [error, setError] = useState(null);
   const wsRef = useRef(null)
   const imageRef = useRef(null);
+  const [keypoints, setKeypoints] = useState('');
 
   useEffect(() => {
     const connectWebSocket = () => {
@@ -19,9 +20,18 @@ function App() {
       };
 
       ws.onmessage = (e) => {
-        if (imageRef.current) {
-          imageRef.current.src = event.data;
+	const data = JSON.parse(e.data);
+
+	// Sets the image
+        if (imageRef.current && data.image) {
+          imageRef.current.src = data.image;
 	}
+
+	// Sets the keypoints
+	if (data.keypoints) {
+	  setKeypoints(data.keypoints);
+	}
+
       }
 
       ws.onerror = (e) => {
@@ -53,6 +63,11 @@ function App() {
 	  {!isConnected && (<p>Connecting to camera..</p>)}
 	  {error && (<p>Error: {error}</p>)}
 	  <img ref={imageRef} className="w-full h-full object-contain" />
+	  {keypoints && (
+	    <div className="flex flex-col items-center">
+	      <p>ID: {keypoints[0]?.id}</p>
+	    </div>
+	)}
       </div>
     </div>
   )
