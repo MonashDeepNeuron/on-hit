@@ -12,6 +12,7 @@ function App() {
   useEffect(() => {
     const connectWebSocket = () => {
       const ws = new WebSocket('ws://127.0.0.1:8000/ws');
+
       ws.onopen = () => {
         setIsConnected(true);
         setError(null);
@@ -46,11 +47,13 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-row justify-center">
-	  <p className="font-bold">On-Hit</p>
+    <div className="flex flex-row justify-center py-[5rem]">
+      <div className="flex flex-col justify-center items-center">
+	  <p className="font-bold text-4xl">On-Hit</p>
 	  {!isConnected && (<p>Connecting to camera..</p>)}
 	  {error && (<p>Error: {error}</p>)}
 	  <img ref={imageRef} className="w-full h-full object-contain" />
+      </div>
     </div>
   )
 }

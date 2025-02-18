@@ -16,6 +16,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+print("Initializing the camera")
+zed = ZEDCamera()
+print("Configuring the camera..")
+zed.configure_camera()
+print("Camera configured, opening the camera..")
+zed.open_camera()
+print("Camera opened")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -23,9 +30,6 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("Websocket connection accepted\n")
     try:
-        zed = ZEDCamera()
-        zed.configure_camera()
-        zed.open_camera()
         while True:
             frame = zed.single_frame_inference(True)["frame"]
             _, buffer = cv2.imencode('.jpg', frame)
