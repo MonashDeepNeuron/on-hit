@@ -1,6 +1,5 @@
 import sys
-sys.path.append("OnHitCode/Mapping/zedtopkl")
-from Zed_class import ZEDCamera
+from  zedtopkl import ZEDCamera
 
 """
 Training: 70
