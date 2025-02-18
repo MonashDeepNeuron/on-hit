@@ -168,8 +168,9 @@ class ZEDCamera:
                 cv_viewer.render_2D(frame,image_scale,bodies.body_list
                         ,self.body_param.enable_tracking,self.body_param.body_format)
             else:
-                frame = None
-            
+                frame = image.get_data()
+                cv_viewer.render_2D(frame,image_scale,bodies.body_list
+                        ,self.body_param.enable_tracking,self.body_param.body_format)
             #this stores every body into a list for the output dictionary
             detected_bodies = []
             if bodies.body_list:
