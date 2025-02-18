@@ -1,7 +1,7 @@
-
+import cv2 
+from typing import List
 from Zed_class import ZEDCamera
-zed = ZEDCamera()
-
+ZEDCamera()
 
 """
 
@@ -22,11 +22,16 @@ class TrainingDivision(ZEDCamera):
 
     def __init__(self):
         super().__init__()
+
+    def write_STGCN_format(keypoints: dict):
+        pass 
   
     def label_video_capture(self):
         """
         Opens an instance where we can record and label data from the ZedSDK camera capture
         """
+        
+        detections = []
 
         # Loads the camera and pose estimation from the ZedSDK
         self.configure_camera()
@@ -35,10 +40,28 @@ class TrainingDivision(ZEDCamera):
         # Begins video capture 
         while True:
 
-            frame = self.single_frame_inference()
-            cv2.imshow("Zed", frame["frame"])
+            # runs inference on a single frame the video
+            output = self.single_frame_inference(False)
 
-          
+            # gets the frames and the keypoints of the detectiosn dict
+            frame = output["frame"]
+            detections = output["keypoints"]
+            
+            #displays the frames that were recorded 
+            cv2.imshow("Zed", frame)
+
+            key = cv2.waitKey(1) & 0xFF
+            
+            if key == ord("c"):
+                
+                print("Video Captured")
+                cv2.destroyAllWindows()
+
+                break 
+
+        print(detections[0]["keypoints"])
+
+        label = int(input("Enter Action label:")) 
       
 
     def store_data(self, dataset_name: str="",
@@ -48,7 +71,7 @@ class TrainingDivision(ZEDCamera):
         """
         pass 
   
-    def configure_dataset(self, split: list[int]):
+    def configure_dataset(self, split: List[int]):
         """
         Divides the data based on the split and configures the dataset into the ST-GCN format. 
         """
@@ -60,9 +83,6 @@ class TrainingDivision(ZEDCamera):
         """
         pass 
 
-train = TrainingDivision() 
-train.label_video_capture()
-train.store_data()
+training = TrainingDivision()
+training.label_video_capture()
 
-train.configure_dataset([70,20,10])
-train.json_to_pkl()
