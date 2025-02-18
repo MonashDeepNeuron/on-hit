@@ -27,7 +27,7 @@ class SocketServer:
         '''
         """Waits for a single message from the client and returns it."""
         self.client_socket, client_address = self.server_socket.accept()
-        #print(f"Connected by {client_address}")
+        print(f"Connected by {client_address}")
 
         # Receive a single message
         data = self.client_socket.recv(8192).decode()
