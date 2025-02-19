@@ -116,7 +116,7 @@ def process_zed_file(input_path:str, class_label:int=0):
             body_id = 0 
             bodies.setdefault(body_id, []).append(body)
     
-    num_bodies = raw_data["bodies"]   
+    num_bodies = 1   
     max_frames = max(len(frames) for frames in bodies.values())
     num_joints = 25
     num_cords = 3 #3d skeleton
