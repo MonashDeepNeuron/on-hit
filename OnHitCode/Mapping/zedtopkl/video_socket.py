@@ -17,13 +17,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-print("[FASTAPI] Initializing the camera")
 zed = ZEDCamera()
-print("[FASTAPI] Configuring the camera..")
-zed.configure_camera()
-print("[FASTAPI] Camera configured, opening the camera..")
-zed.open_camera()
-print("[FASTAPI] Camera opened")
+
+@app.on_event("startup")
+async def startup_event():
+    print("[FASTAPI] Initializing the camera")
+    print("[FASTAPI] Configuring the camera..")
+    zed.configure_camera()
+    print("[FASTAPI] Camera configured, opening the camera..")
+    zed.open_camera()
+    print("[FASTAPI] Camera opened")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    if zed:
+        zed.cleanup()
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
