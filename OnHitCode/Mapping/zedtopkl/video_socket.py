@@ -1,3 +1,8 @@
+# Sets current directory at 'OnHitCode' directory
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
@@ -5,7 +10,8 @@ import base64
 import asyncio
 import uvicorn
 import json
-from Zed_class import *
+from Mapping.zedtopkl.Zed_class import *
+from inference.socket_client import *
 
 app = FastAPI()
 
@@ -45,6 +51,11 @@ async def websocket_endpoint(websocket: WebSocket):
             single_frame_instance = zed.single_frame_inference(True)
             frame = single_frame_instance["frame"]
             keypoints = single_frame_instance["keypoints"]
+
+            ws_client = SocketClient("130.194.132.217")
+            response = ws_client.send_message("Hello Server!")
+            print(f"Response from WS: {response}")
+            ws_client.close_socket()
 
             # Image encoding to base64
             _, buffer = cv2.imencode('.jpg', frame)
