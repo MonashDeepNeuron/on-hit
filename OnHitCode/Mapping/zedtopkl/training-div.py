@@ -150,5 +150,5 @@ class TrainingDivision(ZEDCamera):
 
 
 training = TrainingDivision()
-#training.label_video_capture("a","./json_clips/")
-training.configure_dataset([0.7,0.2,0.1],"./json_clips/","./test_pkl_files")
+training.label_video_capture("a","./json_clips/")
+#training.configure_dataset([0.7,0.2,0.1],"./json_clips/","./test_pkl_files")
