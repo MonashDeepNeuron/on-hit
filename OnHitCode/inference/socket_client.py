@@ -3,11 +3,15 @@ import socket
 class SocketClient:
     '''
     Use this on the remote computer to send messages to a socket
+    Input:
+        server_ip: str = ip address
+        port:int = port number used to connect to
     '''
-    def __init__(self, server_ip="127.0.0.1", port=5000):
+    def __init__(self, server_ip:str="130.194.132.217", port:int=5000):
         self.server_ip = server_ip
         self.server_port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.settimeout(5)
         self.client_socket.connect((self.server_ip, self.server_port))
         print(f"Connected to {self.server_ip}:{self.server_port}")
 
@@ -29,7 +33,8 @@ class SocketClient:
 
 # Run the client to send one message
 if __name__ == "__main__":
-    client = SocketClient("130.194.132.217")  # Replace with actual server IP
+    client = SocketClient("130.194.132.217",5000)  # Replace with actual server IP
+    print("socket2")
     try:
         client.send_message("Hello, Server!")
     finally:
