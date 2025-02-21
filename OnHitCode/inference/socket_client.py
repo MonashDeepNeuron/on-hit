@@ -19,6 +19,8 @@ class SocketClient:
             message: all = whatever you want to send over to the server
         '''
         self.client_socket.sendall(message.encode())
+        response = self.client_socket.recv(1024).decode()
+        return response
 
     def close_socket(self):
         '''
