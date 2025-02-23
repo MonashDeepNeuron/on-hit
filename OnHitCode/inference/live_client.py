@@ -23,6 +23,10 @@ zed.open_camera()
 
 jetson_client = SocketClient()
 key_wait = 10
+
+# ✅ Ensure an OpenCV window is created before waiting for input
+cv2.namedWindow("Zed")  # Create a named OpenCV window
+cv2.imshow("Zed", np.zeros((480, 640, 3), dtype=np.uint8))  # Show a black screen initially
 print("Press 'S' to start recording or 'Q' to quit.")
 
 while True:
