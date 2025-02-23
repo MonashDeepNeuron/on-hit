@@ -43,6 +43,7 @@ while True:
     input_data = ws_server.receive_single_message()
     skeleton_data = pickle.loads(input_data)
 
+    
     result = inference_recognizer(model, skeleton_data)
 
     formatted_result = format_prediction(result)

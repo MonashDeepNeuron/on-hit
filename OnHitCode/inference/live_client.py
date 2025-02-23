@@ -52,8 +52,15 @@ while True:
 
         #hard coded
         skeleton_array[0,t] = keypoints 
-    
-    pickle_data = pickle.dumps(skeleton_array)
+
+    annotations = {
+        'frame_dir':"test_name",
+        'label':0,
+        'total_frames':max_frames,
+        'keypoint':skeleton_array
+    }
+
+    pickle_data = pickle.dumps(annotations)
     jetson_client.send_message(pickle_data)
 
     print(jetson_client.receive_message())
