@@ -22,7 +22,7 @@ class SocketClient:
         Input:
             message: all = whatever you want to send over to the server
         '''
-        self.client_socket.sendall(message.encode())
+        self.client_socket.sendall(message)
     
     def receive_message(self):
         '''
