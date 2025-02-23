@@ -23,6 +23,22 @@ class SocketClient:
             message: all = whatever you want to send over to the server
         '''
         self.client_socket.sendall(message.encode())
+    
+    def receive_message(self):
+        '''
+        Receives a message from the server.
+
+        Returns:
+            - str: The received message.
+        '''
+        if self.client_socket:
+            try:
+                response = self.client_socket.recv(1024).decode()
+                print(f"📥 Received: {response}")
+                return response
+            except socket.error as e:
+                print(f"❌ Receive error: {e}")
+                return None
 
     def close_socket(self):
         '''
