@@ -44,6 +44,16 @@ class SocketServer:
             print("Client socket closed.")
         self.server_socket.close()
         print("Server socket closed.")
+    
+    def send_message(self, message: str):
+        """
+        Sends a message to the client.
+        Inputs:
+            message (str): The response message to send.
+        """
+        if hasattr(self, "client_socket"):  # Check if the client socket exists
+            self.client_socket.sendall(message.encode())
+            print(f"Sent to client: {message}")
 
 # Run the server to receive one message
 if __name__ == "__main__":
