@@ -1,6 +1,6 @@
 from mmaction.apis import inference_recognizer, init_recognizer
 import pickle
-import socket_server
+from socket_server import *
 import numpy as np
 
 
@@ -10,7 +10,7 @@ checkpoint_path = "/home/labuser/OnHit/OnHitCode/models/test2/epoch_20.pth"
 
 model = init_recognizer(config_path, checkpoint_path, device="cuda:0")  
 
-ws_server = socket_server()
+ws_server = SocketServer()
 
 
 '''
@@ -40,7 +40,7 @@ Loop to send and recieve message
 3. send back 
 '''
 while True:
-    input_data = ws_server.recieve_single_message()
+    input_data = ws_server.receive_single_message()
 
     result = inference_recognizer(model, input_data)
 
