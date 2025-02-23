@@ -35,7 +35,8 @@ while True:
     start_time = time.time()
     while time.time() - start_time < 2:  
         zed_result = zed.single_frame_inference()
-        frames.append(zed_result["pose_data"][0])
+        if len(zed_result["keypoints"]):
+            frames.append(zed_result["keypoints"][0])
 
 
     num_bodies = 1   
@@ -53,7 +54,7 @@ while True:
         skeleton_array[0,t] = keypoints 
 
     json_data = json.dumps(skeleton_array.tolist())
-    jetson_client.send_message(json_data)
+    jetson_client.send_message(json_data + "\n")
 
     print(jetson_client.receive_message())
 
