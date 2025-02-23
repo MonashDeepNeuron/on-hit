@@ -17,22 +17,29 @@ ws_server = SocketServer()
 Function to take the result from mmaction and then process it into a string
 '''
 def format_prediction(prediction):
-    """Converts MMAction2 prediction output to a readable string."""
-    pred_scores = prediction.pred_score.cpu().numpy()  # Convert tensor to numpy array
+    """Converts MMAction2 prediction output to a readable string with top 5 predictions."""
+    pred_scores = prediction.pred_score.cpu().numpy()  # Convert tensor to NumPy array
     pred_label = int(prediction.pred_label.cpu().numpy())  # Extract the predicted class
     gt_label = int(prediction.gt_label.cpu().numpy())  # Extract the ground truth label
-    num_classes = int(prediction.num_classes)
+    num_classes = int(pred_scores.shape[0])  # Total number of classes
 
-    # Format as a readable string
+    # Get the top 5 predictions
+    top5_indices = np.argsort(pred_scores)[-5:][::-1]  # Get top 5 indices in descending order
+    top5_scores = pred_scores[top5_indices]  # Get corresponding probabilities
+
+    # Format the output string
     result_str = (
         f"Prediction Results:\n"
         f"- Number of Classes: {num_classes}\n"
-        f"- Predicted Label: {pred_label}\n"
-        f"- Ground Truth Label: {gt_label}\n"
-        f"- Prediction Scores: {pred_scores}\n"
+        f"- Predicted Label: {pred_label} (GT: {gt_label})\n"
+        f"- Top 5 Predictions:\n"
     )
-    
+
+    for i in range(5):
+        result_str += f"  {i+1}. Class {top5_indices[i]} - {top5_scores[i]:.4f}\n"
+
     return result_str
+
 '''
 Loop to send and recieve message
 1. Recieve message
@@ -43,7 +50,7 @@ while True:
     input_data = ws_server.receive_single_message()
     skeleton_data = pickle.loads(input_data)
 
-    
+
     result = inference_recognizer(model, skeleton_data)
 
     formatted_result = format_prediction(result)

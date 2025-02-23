@@ -1,4 +1,5 @@
 import sys
+import cv2
 import pickle
 import os
 from socket_client import *
@@ -21,7 +22,7 @@ zed.configure_camera()
 zed.open_camera()
 
 jetson_client = SocketClient()
-
+key_wait = 10
 while True:
     '''
     Main loop
@@ -38,7 +39,12 @@ while True:
         if len(zed_result["keypoints"]):
             frames.append(zed_result["keypoints"][0])
 
+    video_frame = zed_result["frame"]
 
+    cv2.imshow("Zed", frame)
+
+    key = cv2.waitKey(key_wait) & 0xFF
+    
     num_bodies = 1   
     max_frames = len(frames)
     num_joints = 25
@@ -64,6 +70,12 @@ while True:
     jetson_client.send_message(pickle_data)
 
     print(jetson_client.receive_message())
+
+    if key == ord("q"):
+        print("exit")
+        cv2.destroyAllWindows()
+        zed.cleanup()
+        break
 
 
 
