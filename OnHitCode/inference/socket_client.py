@@ -11,7 +11,7 @@ class SocketClient:
         self.server_ip = server_ip
         self.server_port = port
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket.settimeout(5)
+        self.client_socket.settimeout(None)
         self.client_socket.connect((self.server_ip, self.server_port))
         print(f"Connected to {self.server_ip}:{self.server_port}")
 

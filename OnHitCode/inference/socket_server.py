@@ -14,6 +14,7 @@ class SocketServer:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.server_ip, self.server_port))
         self.server_socket.listen(1)
+        self.server_socket.settimeout(None)
         print(f"Server listening on {self.server_ip}:{self.server_port}...")
 
     def receive_single_message(self):
