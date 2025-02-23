@@ -28,7 +28,16 @@ key_wait = 10
 cv2.namedWindow("Zed")  # Create a named OpenCV window
 cv2.imshow("Zed", np.zeros((480, 640, 3), dtype=np.uint8))  # Show a black screen initially
 print("Press 'S' to start recording or 'Q' to quit.")
+'''
+Press s, and then start recording
+After 2 seconds, you stop recording and add the zed skeleton into a list 
+iterate throught the list and convert them into ntu-skeleton
+add the skeleton into the correct format for the stgcn prediction
+turn it into a pickle and then, send it over the packet
+wait to recieve predictions
+print results
 
+'''
 while True:
     # Wait for user to press 'S' to start recording
     key = cv2.waitKey(1) & 0xFF
