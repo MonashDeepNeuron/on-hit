@@ -30,7 +30,7 @@ class SocketServer:
         print(f"Connected by {client_address}")
 
         # Receive a single message
-        data = self.client_socket.recv(8192).decode()
+        data = self.client_socket.recv(8192)
         #print(f"Received from client: {data}")
 
         return data  # Return the received message

@@ -1,4 +1,5 @@
 import sys
+import json
 import os
 from socket_client import *
 import time
@@ -50,8 +51,9 @@ while True:
 
         #hard coded
         skeleton_array[0,t] = keypoints 
-    
-    jetson_client.send_message(skeleton_array)
+
+    json_data = json.dumps(skeleton_array.tolist())
+    jetson_client.send_message(json_data)
 
     print(jetson_client.receive_message())
 

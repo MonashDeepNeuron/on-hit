@@ -1,4 +1,5 @@
 from mmaction.apis import inference_recognizer, init_recognizer
+import json
 import pickle
 from socket_server import *
 import numpy as np
@@ -41,6 +42,9 @@ Loop to send and recieve message
 '''
 while True:
     input_data = ws_server.receive_single_message()
+    json_data = json.loads(input_data)
+    np_array = np.array(json.loads(input_data))
+
 
     result = inference_recognizer(model, input_data)
 
