@@ -1,5 +1,5 @@
 import sys
-import json
+import pickle
 import os
 from socket_client import *
 import time
@@ -52,9 +52,9 @@ while True:
 
         #hard coded
         skeleton_array[0,t] = keypoints 
-
-    json_data = json.dumps(skeleton_array.tolist())
-    jetson_client.send_message(json_data + "\n")
+    
+    pickle_data = pickle.dumps(skeleton_array)
+    jetson_client.send_message(pickle_data)
 
     print(jetson_client.receive_message())
 
