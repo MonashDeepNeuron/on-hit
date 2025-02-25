@@ -37,6 +37,7 @@ class SocketServer:
             data = self.client_socket.recv(1024)
             buffer += data 
             if b"<END>" in buffer:
+                print("Buffer reached")
                 break
 
         #Gotta remove the buffer
@@ -60,6 +61,7 @@ class SocketServer:
             message (str): The response message to send.
         """
         if hasattr(self, "client_socket"):  # Check if the client socket exists
+            message += b"<END>"
             self.client_socket.sendall(message.encode())
             print(f"Sent to client: {message}")
 

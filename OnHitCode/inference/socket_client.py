@@ -34,9 +34,18 @@ class SocketClient:
         '''
         if self.client_socket:
             try:
-                response = self.client_socket.recv(1024).decode()
-                print(f"📥 Received: {response}")
-                return response
+                buffer = b""
+                while True:
+                    response = self.client_socket.recv(1024)
+                    if not response:
+                        break
+                    buffer += response
+                    if b"<END>" in buffer:
+                        break
+                
+                cleaned_response,_= buffer.split(b"<END>",1)
+                cleaned_response.decode()
+                return cleaned_response
             except socket.error as e:
                 print(f"❌ Receive error: {e}")
                 return None
