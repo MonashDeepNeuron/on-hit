@@ -40,18 +40,6 @@ while True:
     server_socket, server_address = jetson_client.client_socket.accept()
     while True:
         print(f"Connected by {server_address}")
-
-
-        buffer = b""
-        while True:
-        # Receive a single message
-            data = server_socket.recv(64)
-            buffer += data 
-            if b"<END>" in buffer:
-                print("Buffer reached")
-                break
-        #Gotta remove the buffer
-        cleaned_data, _ = buffer.split(b"<END>",1)
         if input("Press 's' to start: ") == "s":
             frames = []
             start_time = time.time()
