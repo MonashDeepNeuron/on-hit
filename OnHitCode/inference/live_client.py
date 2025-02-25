@@ -3,6 +3,7 @@ import cv2
 import pickle
 import os
 from socket_client import *
+import keyboard
 import time
 import numpy as np
 
@@ -13,10 +14,11 @@ target_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../Mapping
 sys.path.append(target_dir)
 
 
-# Now you can import zedtopkl files
+# Importanting the relevant files from with zedtopkl
 from Zed_class import *
 from body34_to_NTU25 import *
 
+#Initating our zed camera object
 zed = ZEDCamera()
 zed.configure_camera()
 zed.open_camera()
@@ -39,28 +41,20 @@ print results
 
 '''
 while True:
-    # Wait for user to press 'S' to start recording
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("q"):
-        print("Exiting...")
-        cv2.destroyAllWindows()
-        zed.cleanup()
-        break
-    elif key == ord("s"):
-        print("🎥 Recording for 2 seconds...")
-
+    print("press 's' to start recording for 2 seconds")
+    if keyboard.read_key() == "s":
         frames = []
         start_time = time.time()
         
         # Record for 2 seconds
         while time.time() - start_time < 2:
-            zed_result = zed.single_frame_inference()
+            zed_result = zed.single_frame_inference(False)
             if len(zed_result["keypoints"]):
                 frames.append(zed_result["keypoints"][0])
 
-        video_frame = zed_result["frame"]
+        #video_frame = zed_result["frame"]
 
-        cv2.imshow("Zed", video_frame)
+        #cv2.imshow("Zed", video_frame)
 
         num_bodies = 1   
         max_frames = len(frames)
@@ -87,5 +81,3 @@ while True:
 
         response = jetson_client.receive_message()  # Receive response
         print(f"📥 Server Response: {response}")
-
-        print("\nPress 'S' to record again or 'Q' to quit.")
