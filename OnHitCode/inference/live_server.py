@@ -6,7 +6,7 @@ import numpy as np
 
 
 config_path = "/home/labuser/OnHit/mmaction2/configs/skeleton/stgcnpp/stgcnpp_8xb16-bone-u100-80e_ntu60-xsub-keypoint-3d.py"
-checkpoint_path = "/home/labuser/OnHit/OnHitCode/models/test2/epoch_20.pth"
+checkpoint_path = "/home/labuser/OnHit/OnHitCode/models/test2/epoch_90.pth"
 
 model = init_recognizer(config_path, checkpoint_path, device="cuda:0")  
 

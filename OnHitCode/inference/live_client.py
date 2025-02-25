@@ -3,7 +3,6 @@ import cv2
 import pickle
 import os
 from socket_client import *
-import keyboard
 import time
 import numpy as np
 
@@ -41,8 +40,7 @@ print results
 
 '''
 while True:
-    print("press 's' to start recording for 2 seconds")
-    if keyboard.read_key() == "s":
+    if input("Press 's' to start") == "s":
         frames = []
         start_time = time.time()
         
