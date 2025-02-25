@@ -47,8 +47,10 @@ Loop to send and recieve message
 3. send back 
 '''
 while True:
+    print("waiting for client")
     input_data = ws_server.receive_single_message()
     skeleton_data = pickle.loads(input_data)
+    
 
 
     result = inference_recognizer(model, skeleton_data)
@@ -56,3 +58,4 @@ while True:
     formatted_result = format_prediction(result)
 
     ws_server.send_message(formatted_result)
+    print("replied to message")
