@@ -18,11 +18,12 @@ class SocketClient:
     def send_message(self, message):
         '''
         Sends a single message over to the server, note the message has no specificed type
+        There is a message at the end to mark the end 
 
         Input:
             message: all = whatever you want to send over to the server
         '''
-        self.client_socket.sendall(message)
+        self.client_socket.sendall(message + b"<END>")
     
     def receive_message(self):
         '''

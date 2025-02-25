@@ -30,11 +30,18 @@ class SocketServer:
         self.client_socket, client_address = self.server_socket.accept()
         print(f"Connected by {client_address}")
 
-        # Receive a single message
-        data = self.client_socket.recv(8192)
-        #print(f"Received from client: {data}")
 
-        return data  # Return the received message
+        buffer = b""
+        while True:
+        # Receive a single message
+            data = self.client_socket.recv(1024)
+            buffer += data 
+            if b"<END>" in buffer:
+                break
+
+        #Gotta remove the buffer
+        cleaned_data, _ = buffer.split(b"<END>",1)
+        return cleaned_data  # Return the received message
 
     def close_socket(self):
         '''

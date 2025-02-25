@@ -73,7 +73,7 @@ while True:
             'keypoint': skeleton_array
         }
 
-        pickle_data = pickle.dumps(annotations) + b"<END"
+        pickle_data = pickle.dumps(annotations) 
         jetson_client.send_message(pickle_data)  # Send Data
         print("📤 Data sent. Waiting for response...")
 
