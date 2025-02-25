@@ -48,14 +48,28 @@ Loop to send and recieve message
 '''
 while True:
     print("waiting for client")
-    input_data = ws_server.receive_single_message()
-    skeleton_data = pickle.loads(input_data)
-    
+    client_socket, client_address = ws_server.server_socket.accept()
+    while True:
+        print(f"Connected by {client_address}")
 
 
-    result = inference_recognizer(model, skeleton_data)
+        buffer = b""
+        while True:
+        # Receive a single message
+            data = client_socket.recv(64)
+            buffer += data 
+            if b"<END>" in buffer:
+                print("Buffer reached")
+                break
 
-    formatted_result = format_prediction(result)
+        #Gotta remove the buffer
+        cleaned_data, _ = buffer.split(b"<END>",1)
+        skeleton_data = pickle.loads(cleaned_data)
 
-    ws_server.send_message(formatted_result)
-    print("replied to message")
+
+        result = inference_recognizer(model, skeleton_data)
+
+        formatted_result = format_prediction(result)
+
+        ws_server.send_message(formatted_result)
+        print("replied to message")

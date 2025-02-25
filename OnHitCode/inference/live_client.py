@@ -36,42 +36,67 @@ print results
 
 '''
 while True:
-    if input("Press 's' to start: ") == "s":
-        frames = []
-        start_time = time.time()
-        
-        # Record for 2 seconds
-        while time.time() - start_time < 2:
-            zed_result = zed.single_frame_inference(False)
-            if len(zed_result["keypoints"]):
-                frames.append(zed_result["keypoints"][0])
 
-        #video_frame = zed_result["frame"]
+    server_socket, server_address = jetson_client.client_socket.accept()
+    while True:
+        print(f"Connected by {server_address}")
 
-        #cv2.imshow("Zed", video_frame)
 
-        num_bodies = 1   
-        max_frames = len(frames)
-        num_joints = 25
-        num_cords = 3  # 3D skeleton
-        skeleton_array = np.full((num_bodies, max_frames, num_joints, num_cords), np.nan, dtype=np.float32)
+        buffer = b""
+        while True:
+        # Receive a single message
+            data = server_socket.recv(64)
+            buffer += data 
+            if b"<END>" in buffer:
+                print("Buffer reached")
+                break
+        #Gotta remove the buffer
+        cleaned_data, _ = buffer.split(b"<END>",1)
+        if input("Press 's' to start: ") == "s":
+            frames = []
+            start_time = time.time()
+            
+            # Record for 2 seconds
+            while time.time() - start_time < 2:
+                zed_result = zed.single_frame_inference(False)
+                if len(zed_result["keypoints"]):
+                    frames.append(zed_result["keypoints"][0])
 
-        # Convert skeleton data
-        for t, frame in enumerate(frames):
-            keypoints = convert_zed34_to_ntu(frame["keypoints"])
-            skeleton_array[0, t] = keypoints 
+            #video_frame = zed_result["frame"]
 
-        # Prepare Pickle Data
-        annotations = {
-            'frame_dir': "test_name",
-            'label': 0,
-            'total_frames': max_frames,
-            'keypoint': skeleton_array
-        }
+            #cv2.imshow("Zed", video_frame)
 
-        pickle_data = pickle.dumps(annotations) 
-        jetson_client.send_message(pickle_data)  # Send Data
-        print("📤 Data sent. Waiting for response...")
+            num_bodies = 1   
+            max_frames = len(frames)
+            num_joints = 25
+            num_cords = 3  # 3D skeleton
+            skeleton_array = np.full((num_bodies, max_frames, num_joints, num_cords), np.nan, dtype=np.float32)
 
-        response = jetson_client.receive_message()  # Receive response
-        print(f"📥 Server Response: {response}")
+            # Convert skeleton data
+            for t, frame in enumerate(frames):
+                keypoints = convert_zed34_to_ntu(frame["keypoints"])
+                skeleton_array[0, t] = keypoints 
+
+            # Prepare Pickle Data
+            annotations = {
+                'frame_dir': "test_name",
+                'label': 0,
+                'total_frames': max_frames,
+                'keypoint': skeleton_array
+            }
+
+            pickle_data = pickle.dumps(annotations) 
+            jetson_client.send_message(pickle_data)  # Send Data
+            print("📤 Data sent. Waiting for response...")
+
+            buffer = b""
+            while True:
+            # Receive a single message
+                data = server_socket.recv(64)
+                buffer += data 
+                if b"<END>" in buffer:
+                    print("Buffer reached")
+                    break
+            #Gotta remove the buffer
+            cleaned_data, _ = buffer.split(b"<END>",1)
+            print(f"📥 Server Response: {cleaned_data}")

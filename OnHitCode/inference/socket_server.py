@@ -14,7 +14,7 @@ class SocketServer:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.server_ip, self.server_port))
         self.server_socket.listen(1)
-        self.server_socket.settimeout(10)
+        self.server_socket.settimeout(20)
         print(f"Server listening on {self.server_ip}:{self.server_port}...")
 
     def receive_single_message(self):
@@ -34,7 +34,7 @@ class SocketServer:
         buffer = b""
         while True:
         # Receive a single message
-            data = self.client_socket.recv(1024)
+            data = self.client_socket.recv(64)
             buffer += data 
             if b"<END>" in buffer:
                 print("Buffer reached")
