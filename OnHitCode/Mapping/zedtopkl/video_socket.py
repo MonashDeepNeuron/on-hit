@@ -15,6 +15,7 @@ from inference.socket_client import *
 import time
 import numpy as np
 import pickle
+from body34_to_NTU25 import *
 
 app = FastAPI()
 
@@ -56,6 +57,21 @@ async def websocket_endpoint(websocket: WebSocket):
 
             while time.time() - start_time < 2:
                 zed_result = zed.single_frame_inference(True)
+                frame = zed_result["frame"]
+                zed_keypoints = zed_result["keypoints"] # remove this later not needed
+
+                # Sending image to frontend
+                # Image encoding to base64
+                _, buffer = cv2.imencode('.jpg', frame)
+                base64_frame = base64.b64encode(buffer).decode('utf-8')
+
+                # This is what the frontend will receive
+                data_package = {
+                    "image": f"data:image/jpeg;base64,{base64_frame}",
+                    "keypoints": zed_keypoints,
+                }
+                await websocket.send_text(json.dumps(data_package))
+
                 if len(zed_result["keypoints"]):
                     frames.append(zed_result["keypoints"][0])
 
@@ -79,25 +95,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
             ws_client = SocketClient("130.194.132.217")
             pickle_data = pickle.dumps(annotations)
-            ws_client.send_message(pickle_data)
-
-            single_frame_instance = zed.single_frame_inference(True)
-            frame = single_frame_instance["frame"]
-            keypoints = single_frame_instance["keypoints"]
+            pickle_data += b"<END>"
+            print("About to send pickle data to workstation")
+            response = ws_client.send_message(pickle_data)
 
             print(f"Response from WS: {response}")
             ws_client.close_socket()
-
-            # Image encoding to base64
-            _, buffer = cv2.imencode('.jpg', frame)
-            base64_frame = base64.b64encode(buffer).decode('utf-8')
-
-            # This is what the frontend will receive
-            data_package = {
-                "image": f"data:image/jpeg;base64,{base64_frame}",
-                "keypoints": keypoints,
-            }
-            await websocket.send_text(json.dumps(data_package))
 
             await asyncio.sleep(0.033) # 30 FPS
     except Exception as e:
