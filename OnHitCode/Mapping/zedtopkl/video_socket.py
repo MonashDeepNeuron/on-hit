@@ -12,6 +12,9 @@ import uvicorn
 import json
 from Mapping.zedtopkl.Zed_class import *
 from inference.socket_client import *
+import time
+import numpy as np
+import pickle
 
 app = FastAPI()
 
@@ -48,12 +51,40 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
+            frames = []
+            start_time = time.time()
+
+            while time.time() - start_time < 2:
+                zed_result = zed.single_frame_inference(True)
+                if len(zed_result["keypoints"]):
+                    frames.append(zed_result["keypoints"][0])
+
+            num_bodies = 1
+            max_frames = len(frames)
+            num_joints = 25
+            num_cords = 3
+            skeleton_array = np.full((num_bodies, max_frames, num_joints, num_cords), np.nan, dtype=np.float32)
+
+            for t, frame in enumerate(frames):
+                keypoints = convert_zed34_to_ntu(frame["keypoints"])
+                skeleton_array[0, t] = keypoints
+
+            # Convert skeleton data
+            annotations = {
+                'frame_dir': "test_name",
+                'label': 0, # placeholder
+                'total_frames': max_frames,
+                'keypoint': skeleton_array
+            }
+
+            ws_client = SocketClient("130.194.132.217")
+            pickle_data = pickle.dumps(annotations)
+            ws_client.send_message(pickle_data)
+
             single_frame_instance = zed.single_frame_inference(True)
             frame = single_frame_instance["frame"]
             keypoints = single_frame_instance["keypoints"]
 
-            ws_client = SocketClient("130.194.132.217")
-            response = ws_client.send_message("Hello Server!")
             print(f"Response from WS: {response}")
             ws_client.close_socket()
 
