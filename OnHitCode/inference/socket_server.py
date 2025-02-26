@@ -100,10 +100,14 @@ def format_prediction(prediction):
         f"- Top 5 Predictions:\n"
     )
 
+    result_dict = {}
+
     for i in range(5):
         result_str += f"  {i+1}. Class {top5_indices[i]} - {top5_scores[i]:.4f}\n"
+        result_dict[i] = top5_indices[i]
 
-    return result_str
+    return result_dict
+    # return result_str
 
 
 from mmaction.apis import inference_recognizer, init_recognizer
