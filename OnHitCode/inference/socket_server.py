@@ -57,7 +57,7 @@ class SocketServer:
                     break
             print(f"Received from client")
             cleaned_data ,_= data.split(b"<END>",1)
-            message = placeholder_data(cleaned_data)
+            message = inference_on_data(cleaned_data)
             self.client_socket.send(message.encode())
 
     def close_socket(self):
@@ -82,7 +82,15 @@ class SocketServer:
 Function to take the result from mmaction and then process it into a string
 '''
 def format_prediction(prediction):
-    """Converts MMAction2 prediction output to a readable string with top 5 predictions."""
+    '''Converts MMAction2 prediction output to a readable string with top 5 predictions.
+
+    Input: prediction(object with 3 attritbutes)
+        these attributes are generally pytorch tensors
+
+    Output: str = a string of a dictionary that has the results and the keys that correspond to specific results 
+    
+    
+    '''
     pred_scores = prediction.pred_score.cpu().numpy()  # Convert tensor to NumPy array
     pred_label = int(prediction.pred_label.cpu().numpy())  # Extract the predicted class
     gt_label = int(prediction.gt_label.cpu().numpy())  # Extract the ground truth label
@@ -106,7 +114,7 @@ def format_prediction(prediction):
         result_str += f"  {i+1}. Class {top5_indices[i]} - {top5_scores[i]:.4f}\n"
         result_dict[i] = top5_indices[i]
 
-    return result_dict
+    return str(result_dict)
     # return result_str
 
 
@@ -115,7 +123,17 @@ import pickle
 
 config_path = "/home/labuser/OnHit/mmaction2/configs/skeleton/stgcnpp/stgcnpp_8xb16-bone-u100-80e_ntu60-xsub-keypoint-3d.py"
 checkpoint_path = "/home/labuser/OnHit/OnHitCode/models/test2/epoch_90.pth"
-def placeholder_data(input_data):
+
+def inference_on_data(input_data):
+    '''
+    This process the data, using inference 
+    Input:
+        input_data: (np array) = M (person)x T(frame) x V(Joint) x C(cords)
+    
+    Output:
+        (str) formatted stgcn results  
+    '''
+
 
     model = init_recognizer(config_path, checkpoint_path, device="cuda:0")  
 
