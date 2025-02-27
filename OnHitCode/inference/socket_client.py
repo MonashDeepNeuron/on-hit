@@ -18,7 +18,7 @@ class SocketClient:
         Input:
             message: all = whatever you want to send over to the server
         '''
-        print(f"About to send data: message")
+        print(f"About to send data")
         self.client_socket.sendall(message)
         response = self.client_socket.recv(1024).decode()
         return response

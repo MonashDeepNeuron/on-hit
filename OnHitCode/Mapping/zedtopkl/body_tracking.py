@@ -175,7 +175,6 @@ def main():
                             }
                     frames.append(body_data)
                 frame += 1
-                data_list.append(frames)
                 num_body = len(bodies.body_list) 
                 max_bodies = max(num_body,max_bodies)
 

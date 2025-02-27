@@ -55,7 +55,7 @@ async def websocket_endpoint(websocket: WebSocket):
             frames = []
             start_time = time.time()
 
-            while time.time() - start_time < 2:
+            while time.time() - start_time < 1.4:
                 zed_result = zed.single_frame_inference(True)
                 frame = zed_result["frame"]
                 zed_keypoints = zed_result["keypoints"] # remove this later not needed
@@ -102,9 +102,10 @@ async def websocket_endpoint(websocket: WebSocket):
             pickle_data += b"<END>"
             print("About to send pickle data to workstation")
             response = ws_client.send_message(pickle_data)
+            formatted_response = json.dumps({'estimations': response})
+            await websocket.send_text(formatted_response)
 
             print(f"Response from WS: {response}")
-            ws_client.close_socket()
 
             await asyncio.sleep(0.033) # 30 FPS
     except Exception as e:
