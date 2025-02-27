@@ -74,6 +74,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 if len(zed_result["keypoints"]):
                     frames.append(zed_result["keypoints"][0])
+            
+            if not frames:
+                print("[FASTAPI] No bodies detected, skipping sending")
+                continue
 
             num_bodies = 1
             max_frames = len(frames)
