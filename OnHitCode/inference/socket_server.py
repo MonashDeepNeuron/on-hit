@@ -109,12 +109,15 @@ def format_prediction(prediction):
     )
 
     result_dict = {}
+    result_arr = [0 for _ in range(14)]
 
     for i in range(5):
-        result_str += f"  {i+1}. Class {top5_indices[i]} - {top5_scores[i]:.4f}\n"
-        result_dict[i] = top5_indices[i]
+        # result_str += f"  {i+1}. Class {top5_indices[i]} - {top5_scores[i]:.4f}\n"
+        result_dict[top5_indices[i]] = top5_scores[i]
+        result_arr[top5_indices[i] - 1] = top5_scores[i]
 
-    return str(result_dict)
+    return str(result_arr)
+    #return str(result_dict)
     # return result_str
 
 
