@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
+import sphereLogo from '/sphere.svg'
+import star from '/star.svg'
+import donut from '/donut.svg'
+import hpcLogo from '/hpc_logo.svg'
 import './App.css'
 
 const ACTION_LABELS = {
@@ -18,6 +22,34 @@ const ACTION_LABELS = {
   11: "Rear Upper Southpaw",
   12: "Guard",
   13: "Idle"
+}
+
+const ProgressBar = ({ action }) => {
+  const [confidence, setConfidence] = useState(0);
+
+  useEffect(() => {
+    setConfidence(action?.confidence);
+  }, [action?.confidence]);
+
+  const progressStyle = {
+    width: `${confidence}%`,
+    backgroundColor: '#4f46e5',
+    transition: 'width 50ms ease-in-out'
+  };
+
+  return (
+    <div className="w-full flex flex-col py-6">
+      <div className="text-6xl font-medium pb-3">
+	{action.label}
+      </div>
+
+      <div className="relative w-full bg-neutral-200 rounded-3xl h-[3rem]">
+	<div className="flex items-center justify-center text-black text-4xl">{action?.confidence}%</div>
+	<div className="absolute top-0 left-0 z-1 rounded-3xl h-full" style={progressStyle}></div>
+      </div>
+
+    </div>
+  );
 }
 
 function App() {
@@ -57,6 +89,8 @@ function App() {
 	    };
 	  });
 
+	  formattedActions.sort((a, b) => b.confidence - a.confidence);
+
 	  console.log(formattedActions);
 	  setProcessedActions(formattedActions);
 	}
@@ -86,21 +120,29 @@ function App() {
   }, []);
 
   return (
-    <div className="flex flex-row justify-center py-[5rem]">
-      <div className="flex flex-col justify-center items-center">
+    <div className="relative flex h-screen flex-row justify-center bg-[url(/mdn_gradient.png)] text-white">
 
-	  <p className="font-semibold text-8xl">On-Hit</p>
+      <img className="absolute -bottom-80 -left-40 w-300 h-300" src={sphereLogo} />
+      <img className="absolute bottom-60 left-200 w-25 h-55" src={star} />
+      <img className="absolute -top-50 -right-70 w-300 h-300" src={donut} />
+      <img className="absolute -bottom-50 right-0 w-200 h-200" src={hpcLogo} />
+
+      <div className="flex flex-col pt-[15rem] justify-items-start w-3/4">
+
+	  <p className="font-semibold text-[12rem] pb-3 flex flex-row justify-center">On-Hit</p>
 
 	  {!isConnected && (<p>Connecting to camera..</p>)}
 	  {error && (<p>Error: {error}</p>)}
 	  
-	  <img ref={imageRef} className="w-full h-full object-contain" />
+	  <div className="flex flex-row w-auto justify-between gap-x-[3rem]">
+	    <img ref={imageRef} className="w-full object-contain overflow-hidden rounded-3xl" />
 
-	  {processedActions.map(action => (
-	    <div key={action.actionId} >
-	      <p className="text-3xl">{action.label} - {action.confidence}%</p>
+	    <div className="flex flex-col w-1/4">
+	    {processedActions.slice(0, 5).map(action => (
+	      <ProgressBar action={action} />
+	    ))}
 	    </div>
-	  ))}
+	  </div>
 
       </div>
     </div>
