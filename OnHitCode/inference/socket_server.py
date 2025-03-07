@@ -125,7 +125,7 @@ from mmaction.apis import inference_recognizer, init_recognizer
 import pickle
 
 config_path = "/home/labuser/OnHit/mmaction2/configs/skeleton/stgcnpp/stgcnpp_8xb16-bone-u100-80e_ntu60-xsub-keypoint-3d.py"
-checkpoint_path = "/home/labuser/OnHit/OnHitCode/models/test2/epoch_90.pth"
+checkpoint_path = "/home/labuser/OnHit/OnHitCode/models/test2/best_acc_top1_epoch70.pth"
 
 def inference_on_data(input_data):
     '''
