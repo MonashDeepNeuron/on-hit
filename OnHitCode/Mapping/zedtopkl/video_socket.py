@@ -15,7 +15,7 @@ from inference.socket_client import *
 import time
 import numpy as np
 import pickle
-from body34_to_NTU25 import *
+from OnHitCode.Mapping.zedtopkl.zed_mapping_utilities import *
 
 app = FastAPI()
 

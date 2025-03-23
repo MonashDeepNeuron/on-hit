@@ -173,7 +173,6 @@ def main():
                             "keypoints": body.keypoint.tolist(), 
                             "frame":frame
                             }
-                    frames.append(body_data)
                 frame += 1
                 num_body = len(bodies.body_list) 
                 max_bodies = max(num_body,max_bodies)
