@@ -1,6 +1,11 @@
 from pymongo import MongoClient 
 import datetime 
 
+#NOTE: 
+# start the db: brew services start mongodb-community@8.0 
+# stop the db: brew services stop mongodb-community@8.0 
+
+
 # TODO: Docker to ensure everyone has the same dependencies to post data to mongodb
 # TODO: Ensuring that everyone is posting to the same database so we have a central location 
 # TODO: Developing the test date 
