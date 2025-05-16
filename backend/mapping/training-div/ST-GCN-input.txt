@@ -1,0 +1,44 @@
+{
+    "split":
+        {
+            'xsub_train':
+                ['S001C001P001R001A001', ...], 
+            'xsub_val':
+                ['S001C001P003R001A001', ...],
+            ...
+        }
+
+    "annotations:
+        [
+            {
+                {
+                    'frame_dir': 'S001C001P001R001A001',
+                    'label': 0,
+                    'total_frames': 103,
+                    'keypoint': array([[[[1032. ,  334.8], ...]]])
+                },
+                {
+                    'frame_dir': 'S001C001P003R001A001',
+                    ...
+                },
+                ...
+
+            }
+        ]
+}
+
+frame_dir: file name (can be json / pkl) 
+keypoint: 
+
+1 person with 4 frames of actions 
+[
+    [ # 1 person 
+    [25 x [x,y,z]], # 25 keypoints with each having x,y,z coordinates (index of the x,y,z is correlated with the NTU-RGB skeleton)
+    [],
+    [],
+    [],
+    ], 
+
+    [] # next person so forth 
+
+]
