@@ -1,11 +1,14 @@
 # Sets current directory at 'OnHitCode' directory
 import sys
+from typing import Dict
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
+# TODO: Implement a virtual env to handle these packages
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
+
 import base64
 import asyncio
 import json
@@ -15,6 +18,37 @@ import time
 import numpy as np
 import pickle
 from mapping.zedtopkl.zed_mapping_utilities import *
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_conn: WebSocket = None
+        self.backend_conn: WebSocket = None
+
+    async def connect_frontend(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_conn = websocket
+
+    async def connect_backend(self, websocket: WebSocket):
+        await websocket.accept()
+        self.backend_conn = websocket
+
+    def disconnect_frontend(self):
+        self.active_conn = None
+
+    def disconnect_backend(self):
+        self.backend_conn = None
+
+    def disconnect_all(self):
+        self.disconnect_frontend()
+        self.disconnect_backend()
+
+    async def send_to_client(self, payload: Dict[str, str], websocket: WebSocket):
+        await websocket.send_text(json.dumps(payload))
+
+    async def receive_from_backend(self):
+        if self.backend_conn:
+            return self.backend_conn.recv()
+        return None
 
 app = FastAPI()
 
@@ -27,6 +61,7 @@ app.add_middleware(
 )
 
 zed = ZEDCamera()
+socket_client = SocketClient()
 
 @app.on_event("startup")
 async def startup_event():
@@ -36,6 +71,10 @@ async def startup_event():
     print("[FASTAPI] Camera configured, opening the camera..")
     zed.open_camera()
     print("[FASTAPI] Camera opened")
+
+    # Connect to socket client
+    print("[FASTAPI] Connecting to socket server..")
+    await socket_client.connect()
 
 @app.on_event("shutdown")
 async def shutdown_event():
